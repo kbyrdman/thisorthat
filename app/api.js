@@ -1,6 +1,7 @@
 var PublicPost = require('../app/models/publicPost.js');
 var PrivatePost = require('../app/models/privatePost.js');
 var User = require('../app/models/user.js');
+var Errors = require('../app/errors.js');
 
 
 
@@ -29,15 +30,10 @@ module.exports.createPrivatePost = function(req, res){
 
 module.exports.updatePublicPost = function(req, res){
 
-	post = getPostById('public', req.body.id, function(err){
-		handleError(err, res);
-	});
+	var errorCallback = Errors.internalServerErrorCallback(res);
+	var notFoundCallback = Errors.notFoundErrorCallback(res);
 
-	if (post == null){
-		res.status(404).send("Not Found");
-		return;
-	}
-
+	post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
 	updatePost(post, req, res);
 };
 
@@ -45,15 +41,10 @@ module.exports.updatePublicPost = function(req, res){
 
 module.exports.updatePrivatePost = function(req, res){
 
-	post = getPostById('private', req.body.id, function(err){
-		handleError(err, res);
-	});
+	var errorCallback = Errors.internalServerErrorCallback(res);
+	var notFoundCallback = Errors.notFoundErrorCallback(res);
 
-	if (post == null){
-		res.status(404).send("Not Found");
-		return;
-	}
-
+	post = getPostById('private', req.body.id, errorCallback, notFoundCallback);
 	updatePost(post, req, res);
 };
 
@@ -61,16 +52,14 @@ module.exports.updatePrivatePost = function(req, res){
 
 module.exports.updateCircles = function(req, res){
 
-	post = getPostById('private', req.body.id, function(err){
-		handleError(err, res);
-	});
+	var errorCallback = Errors.internalServerErrorCallback(res);
+	var notFoundCallback = Errors.notFoundErrorCallback(res);
 
-	if (post == null){
-		res.status(404).send("Not Found");
-		return;
+	post = getPostById('private', req.body.id, errorCallback, notFoundCallback);
+
+	if (post != null){
+		post.circles.concat(req);
 	}
-
-	post.circles.concat(req);
 	savePost(post);
 };
 
@@ -78,14 +67,11 @@ module.exports.updateCircles = function(req, res){
 
 module.exports.deleteCircles = function(req, res){
 
-	post = getPostById('private', req.body.id, function(err){
-		handleError(err, res);
-	});
+	var errorCallback = Errors.internalServerErrorCallback(res);
+	var notFoundCallback = Errors.notFoundErrorCallback(res);
 
-	if (post == null){
-		res.status(404).send("Not Found");
-		return;
-	}
+	post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
+	if (post == null) return;
 
 	circles_to_delete = req.body;
 	while (circles_to_delete.length() > 0){
@@ -105,26 +91,25 @@ module.exports.deleteCircles = function(req, res){
 ******************************************/
 
 
-module.exports.getPublicPost = function(req, res){
+module.exports.getPublicPosts = function(req, res){
+
+	var errorCallback = Errors.internalServerErrorCallback(res);
+	var notFoundCallback = Errors.notFoundErrorCallback(res);
+
+	var ret = {};
+
 	if (req.body.id != null){
-		post = getPostById('private', req.body.id, function(err){
-			handleError(err, res);
-		});
+		post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
 
-		if (post == null){
-			res.status(404).send("Not Found");
-			return;
+		if (post != null){
+			ret.count = 0;
+			ret.results = [];
 		}
+		res.status(200).send(ret);
 
-		res.status(200).json(post);
+	} else if (req.body){
+		//TODO
 	}
-	PublicPost.find({type: "US"}, function(err, flapperPosts){
-		if (err) {
-			handleError(err);
-		} else {
-			
-		}
-	});
 };
 
 
@@ -132,12 +117,16 @@ module.exports.getPublicPost = function(req, res){
 
 
 
+
+
 /************************************************
-	   Helper methods (Avoiding redundancy)
+	   Helper functions (Avoiding redundancy)
 *************************************************/
 
 
-var savePost = function(post, res){
+function savePost(post, res){
+
+	if (post == null) return;
 
 	post.save(function(err) {
 		if (err) {
@@ -146,10 +135,12 @@ var savePost = function(post, res){
 			res.send("OK");
 		}
 	});
-};
+}
 
 
-var updatePost = function(post, req, res){
+function updatePost(post, req, res){
+
+	if (post == null) return;
 
 	if (req.body.votesA != null){
 		post.votes_A = req.body.votesA;
@@ -172,46 +163,66 @@ var updatePost = function(post, req, res){
 	}
 
 	savePost(post);
-};
+}
 
 
-var getPostById = function(type, id, error_callback, no_post_callback){
+function getPostById(type, id, error_callback, no_post_callback){
+
+	var notFoundMsg = id + " does not exist in our system";
 
 	if (type == 'public'){
+
 		PublicPost.findById(id, function(err, post){
-			if (err) {
-				error_callback(err);
-			}
-
-			if (arguments.length() == 4 && post == null){
-				no_post_callback();
-			}
-			return post;
+			return handleQueryResult(err, post, errorCallback, no_post_callback);
 		});
+
 	} else if (type == 'private'){
+
 		PrivatePost.findById(id, function(err, post){
-			if (err) {
-				error_callback(err);
-				return null;
-			} else {
-				return post;
-			}
+			return handleQueryResult(err, post, errorCallback, no_post_callback);
 		});
+
 	}
-};
+}
+
+function getPostsByUserId(type, user_id, errorCallback){
+	//TODO
+}
+
+function getPostsWithinRankRange(type, lowRank, highRank, errorCallback){
+	//TODO
+}
+
+function getPostsWithinCreatedTimeRange(type, startTime, endTime, errorCallback){
+	//TODO
+}
+
+function getPostsWithinRadiusOf(type, center, radius, errorCallback){
+	//TODO
+}
+
+function getPostsWithCategories(type, categories, errorCallback){
+	//TODO: in a while
+}
 
 
-//TODO: make this more robust
-var handleError = function(err, res){
-	res.status(500).send("Internal Server Error");
-	console.log(err);
-};
+function getPrivatePostsWithCircleIds(circleIds, errorCallback){
+	//TODO
+}
 
-var handleNoPost = function(res, msg){
-	res.status(404).send(msg);
-	console.log(msg);
-};
 
+
+function handleQueryResult(err,post,error_callback,no_post_callback){
+	if (err) {
+		error_callback(err);
+	}
+
+	if (post == null){
+		no_post_callback(notFoundMsg);
+	}
+
+	return post;
+}
 
 
 /*
@@ -219,12 +230,12 @@ var handleNoPost = function(res, msg){
 
 	{'name': 'MyCircle', 'user_id': 1234321, 'circle_id': 8941#$5815}
 */
-var indexOfCircleId = function(arr, id){
+function indexOfCircleId(arr, id){
 	for (i = 0; i < arr.count; i++){
 		if (arr[i]['circle_id'] == id){
 			return i;
 		}
 	}
 	return -1;
-};
+}
 

@@ -10,6 +10,7 @@ module.exports = mongoose.model('publicPost',
 		location: Array,  //[lat,lon]
 		user_id: Number,  //mongoose _id of a user
 		created_time: {type: Date, default: new Date()},
+		categories: Array,
 		rank: Number
 	}
 );
