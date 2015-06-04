@@ -14,13 +14,19 @@ var Errors = require('../app/errors.js');
 module.exports.createPublicPost = function(req, res){
 
 	var newPost = new PublicPost(req.body);
-	savePost(newPost);
+	saveModel(newPost, errorCallback(res), successCallback(res));
 };
 
 module.exports.createPrivatePost = function(req, res){
 
 	var newPost = new PrivatePost(req.body);
-	savePost(newPost);
+	saveModel(newPost, errorCallback(res), successCallback(res));
+};
+
+module.exports.createUser = function(req, res){
+
+	var newUser = new User(req.body);
+	saveModel(newUser, errorCallback(res), successCallback(res));
 };
 
 
@@ -30,59 +36,48 @@ module.exports.createPrivatePost = function(req, res){
 
 module.exports.updatePublicPost = function(req, res){
 
-	var errorCallback = Errors.internalServerErrorCallback(res);
-	var notFoundCallback = Errors.notFoundErrorCallback(res);
-
-	post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
+	post = postById('public', req.body.id, errorCallback(res), notFoundCallback(res));
 	updatePost(post, req, res);
 };
-
-
 
 module.exports.updatePrivatePost = function(req, res){
 
-	var errorCallback = Errors.internalServerErrorCallback(res);
-	var notFoundCallback = Errors.notFoundErrorCallback(res);
-
-	post = getPostById('private', req.body.id, errorCallback, notFoundCallback);
+	post = postById('private', req.body.id, errorCallback(res), notFoundCallback(res));
 	updatePost(post, req, res);
 };
 
+module.exports.updateUser = function(req, res){
 
-
-module.exports.updateCircles = function(req, res){
-
-	var errorCallback = Errors.internalServerErrorCallback(res);
-	var notFoundCallback = Errors.notFoundErrorCallback(res);
-
-	post = getPostById('private', req.body.id, errorCallback, notFoundCallback);
-
-	if (post != null){
-		post.circles.concat(req);
-	}
-	savePost(post);
+	//TODO
+	res.status(200).send("Functionality for Updating a User: Coming soon to a Theater near you!");
 };
 
+module.exports.updateHuddles = function(req, res){
 
+	post = postById('private', req.body.id, errorCallback(res), notFoundCallback(res));
 
-module.exports.deleteCircles = function(req, res){
+	if (post != null){
+		post.huddles.concat(req.huddles);
+		saveModel(post);
+	}
+};
 
-	var errorCallback = Errors.internalServerErrorCallback(res);
-	var notFoundCallback = Errors.notFoundErrorCallback(res);
+module.exports.deleteHuddles = function(req, res){
 
-	post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
+	post = postById('public', req.body.id, errorCallback(res), notFoundCallback(res));
 	if (post == null) return;
 
-	circles_to_delete = req.body;
-	while (circles_to_delete.length() > 0){
-		c = circles_to_delete.pop;
-		var index = indexOfCircleId(post.circles, c['circle_id']);
+	huddles_to_delete = req.body;
+	while (huddles_to_delete.length() > 0){
+		c = huddles_to_delete.pop;
+		var index = indexOfHuddleId(post.huddles, c['huddle_id']);
 		if (index >= 0){
-			post.circles.splice(index,1);
+			post.huddles.splice(index,1);
 		}
 	}
 	updatePost(post, req, res);
 };
+
 
 
 
@@ -90,27 +85,88 @@ module.exports.deleteCircles = function(req, res){
 	     Getting Existing Posts
 ******************************************/
 
+// Public Posts
 
-module.exports.getPublicPosts = function(req, res){
+module.exports.getPublicPost = function(req, res){
 
-	var errorCallback = Errors.internalServerErrorCallback(res);
-	var notFoundCallback = Errors.notFoundErrorCallback(res);
+	var id = req.param['id'];
+	post = postById('public', id, errorCallback(res), notFoundCallback(res));
 
-	var ret = {};
-
-	if (req.body.id != null){
-		post = getPostById('public', req.body.id, errorCallback, notFoundCallback);
-
-		if (post != null){
-			ret.count = 0;
-			ret.results = [];
-		}
-		res.status(200).send(ret);
-
-	} else if (req.body){
-		//TODO
+	if (post != null){
+		res.status(200).json(post);
 	}
 };
+
+
+module.exports.getAllPublicPosts = function(req, res){
+
+	PublicPost.find({}, function(err, posts){
+		if (err){
+			res.status(500).send(err);
+		} else {
+			res.status(200).json(posts);
+		}
+	});
+};
+
+
+module.exports.getPublicPostsWithCategories = function(req, res){
+	//TODO
+	res.status(200).send("Functionality for getting Public Posts by categories: Comming soon to a Theater near you!");
+};
+
+
+module.exports.getPublicPostsByQuery = function(req, res){
+
+	var query = new Query('public', req, res);
+	var query_handler = query.handler;
+	if (query_handler != null){
+		query_handler(query);
+	} else {
+		res.status(400).send("Invalid query: " + req.param);
+	}
+
+};
+
+// Private Posts
+
+module.exports.getPrivatePost = function(req, res){
+
+	var id = req.param['id'];
+	post = postById('private', id, errorCallback(res), notFoundCallback(res));
+
+	if (post != null){
+		res.status(200).json(post);
+	}
+};
+
+
+
+
+module.exports.getPrivatePostsByQuery = function(req, res){
+
+	var query = new Query(req, 'private');
+	var query_handler = query.handler;
+	if (query_handler != null){
+		query_handler(query);
+	} else {
+		res.status(400).send("Invalid query: " + req.param);
+	}
+
+};
+
+
+module.exports.getPrivatePostsWithHuddleIds = function(req, res){
+	//TODO
+	res.status(200).send("Functionality for getting Private Posts by huddle ids: Comming soon to a Theater near you!");
+};
+
+
+module.exports.getPrivatePostsWithCategories = function(req, res){
+	//TODO
+	res.status(200).send("Functionality for getting Private Posts by categories: Comming soon to a Theater near you!");
+};
+
 
 
 
@@ -124,15 +180,15 @@ module.exports.getPublicPosts = function(req, res){
 *************************************************/
 
 
-function savePost(post, res){
+function saveModel(model, errCallback, successCallback){
 
-	if (post == null) return;
+	if (model == null) return;
 
-	post.save(function(err) {
+	model.save(function(err) {
 		if (err) {
-			handleError(err);
+			errCallback(err);
 		} else {
-			res.send("OK");
+			successCallback();
 		}
 	});
 }
@@ -162,57 +218,76 @@ function updatePost(post, req, res){
 		post.rank = req.body.rank;
 	}
 
-	savePost(post);
+	saveModel(post);
+}
+
+function updateUser(user, req, res){
+
+	if (user == null) return;
+
+	//TODO
+
+	saveModel(post);
 }
 
 
-function getPostById(type, id, error_callback, no_post_callback){
+function postById(type, id, error_callback, no_post_callback){
 
 	var notFoundMsg = id + " does not exist in our system";
 
 	if (type == 'public'){
 
 		PublicPost.findById(id, function(err, post){
-			return handleQueryResult(err, post, errorCallback, no_post_callback);
+			return handleDBQueryResult(err, post, errorCallback, no_post_callback);
 		});
 
 	} else if (type == 'private'){
 
 		PrivatePost.findById(id, function(err, post){
-			return handleQueryResult(err, post, errorCallback, no_post_callback);
+			return handleDBQueryResult(err, post, errorCallback, no_post_callback);
 		});
 
 	}
 }
 
-function getPostsByUserId(type, user_id, errorCallback){
+var getPostsByUserId = function(query){
 	//TODO
-}
+	query.res.status(200).send("Functionality for User Id Queries: Comming soon to a Theater near you!");
+};
 
-function getPostsWithinRankRange(type, lowRank, highRank, errorCallback){
+var getPostsWithinRankRange = function(query){
 	//TODO
-}
+	query.res.status(200).send("Functionality for Rank Range Queries: Comming soon to a Theater near you!");
+};
 
-function getPostsWithinCreatedTimeRange(type, startTime, endTime, errorCallback){
+var getPostsWithinCreatedTimeRange = function(query){
 	//TODO
-}
+	query.res.status(200).send("Functionality for Created Time Queries: Comming soon to a Theater near you!");
+};
 
-function getPostsWithinRadiusOf(type, center, radius, errorCallback){
+var getPostsWithinRadiusOf = function(query){
 	//TODO
-}
-
-function getPostsWithCategories(type, categories, errorCallback){
-	//TODO: in a while
-}
+	query.res.status(200).send("Functionality for Radius Queries: Comming soon to a Theater near you!");
+};
 
 
-function getPrivatePostsWithCircleIds(circleIds, errorCallback){
-	//TODO
-}
+var successCallback = function(res){
+	return function(){
+		res.status(200).send("OK");
+	};
+};
+
+var errorCallback = function(res) {
+	return Errors.internalServerErrorCallback(res);
+};
+
+var notFoundCallback = function(res) {
+	return Errors.notFoundErrorCallback(res);
+};
 
 
 
-function handleQueryResult(err,post,error_callback,no_post_callback){
+var handleDBQueryResult = function(err,post,error_callback,no_post_callback){
 	if (err) {
 		error_callback(err);
 	}
@@ -222,20 +297,52 @@ function handleQueryResult(err,post,error_callback,no_post_callback){
 	}
 
 	return post;
-}
+};
 
 
 /*
 	Assumes arr is populated with objects structed as follows:
 
-	{'name': 'MyCircle', 'user_id': 1234321, 'circle_id': 8941#$5815}
+	{'name': 'MyHuddle', 'user_id': 1234321, 'huddle_id': 8941#$5815}
 */
-function indexOfCircleId(arr, id){
+function indexOfHuddleId(arr, id){
 	for (i = 0; i < arr.count; i++){
-		if (arr[i]['circle_id'] == id){
+		if (arr[i]['huddle_id'] === id){
 			return i;
 		}
 	}
 	return -1;
 }
+
+
+
+function Query(type, req, res) {
+
+	this.type = type;
+	this.req = req;
+	this.res = res;
+
+	this.handler = (function(){
+		// returning a function to handle certain queries
+		if (req.param['user_id'] != null){
+			//handling user id query
+			return getPostsByUserId;
+
+		} else if (req.param['rangeStart'] != null && this.req.param['rangeEnd'] != null){
+			//handling rank range query
+			return getPostsWithinRankRange;
+
+		} else if (req.param['createdTimeStart'] != null && this.req.param['createdTimeEnd'] != null){
+			//handling create time range query
+			return getPostsWithinCreatedTimeRange;
+
+		} else if (req.param['radius'] != null && this.req.param['centerLat'] != null && this.req.param['centerLon'] != null){
+			//handling radius query
+			return getPostsWithinRadiusOf;
+
+		} else {
+			return null;
+		}
+	})();
+};
 

@@ -8,7 +8,7 @@ module.exports = mongoose.model('user',
 		username: String,
 		password: String, //will move to Auth Service
 		friends: Array,   //this user's friends' mongoose _id's
-		circles: Array,   //this user's circles
-		friends_circles: Array  //circles this user is apart of
+		huddles: Array,   //this user's circles
+		friend_huddles: Array  //circles this user is apart of
 	}
 );
