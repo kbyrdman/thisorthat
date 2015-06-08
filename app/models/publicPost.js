@@ -8,7 +8,7 @@ module.exports = mongoose.model('publicPost',
 		votes_A: {type: Number, default: 0},
 		votes_B: {type: Number, default: 0},
 		location: Array,  //[lat,lon]
-		user_id: Number,  //mongoose _id of a user
+		user_id: String,  //mongoose _id of a user
 		created_time: {type: Date, default: new Date()},
 		categories: Array,
 		rank: Number
