@@ -495,26 +495,6 @@ var notFoundCallback = function(res) {
 	};
 };
 
-var postDocCallback = function(type, res){
-	return function(err, post){
-		if (err){
-			errorCallback(res)(err);
-		} else {
-			if (post){
-				Controllers.updatePost(post, res, errorCallback(res), updatedCallback(res));
-			} else {
-				var newPost = null;
-				if (type == 'public'){
-					newPost = new PublicPost(req.body);
-				} else if (type = 'private'){
-					newPost = new PrivatePost(req.body);
-				}
-				Controllers.saveDoc(newPost, errorCallback(res), createdCallback(res));
-			}
-		}
-	};
-};
-
 var getDocCallback = function(res, msg){
 	return function(err, doc){
 		if (err){
