@@ -47,43 +47,170 @@ module.exports.postHuddles = function(req, res){
 
 
 module.exports.postPublicPostImageURI = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Public Posts' image URI: Comming soon to a Theater near you!");
+
+	var side = req.param('side');
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostImageURI(post, side, req.body.uri, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPrivatePostImageURI = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Private Posts' image URI: Comming soon to a Theater near you!");
+
+	var side = req.param('side');
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostImageURI(post, side, req.body.uri, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPublicPostVotes = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Public Posts' votes: Comming soon to a Theater near you!");
+
+	var side = req.param('side');
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				if (req.body.upvote == true){
+					Controllers.incrementPostVotes(post, side, errorCallback(res), successCallback(res));
+				} else if (req.body.downvote == true){
+					Controllers.decrementPostVotes(post, side, errorCallback(res), successCallback(res));
+				}
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPrivatePostVotes = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Private Posts' votes: Comming soon to a Theater near you!");
+	var side = req.param('side');
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				if (req.body.upvote == true){
+					Controllers.incrementPostVotes(post, side, errorCallback(res), successCallback(res));
+				}
+
+				if (req.body.downvote == true){
+					Controllers.decrementPostVotes(post, side, errorCallback(res), successCallback(res));
+				}
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
+};
+
+module.exports.postPublicPostTitle = function(req, res){
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostTitle(post, req.body.title, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
+};
+
+module.exports.postPrivatePostTitle = function(req, res){
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostTitle(post, req.body.title, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPublicPostCategories = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Public Posts' categories: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.addPostCategories(post, req.body.categories, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPrivatePostCategories = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Private Posts' categories: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.addPostCategories(post, req.body.categories, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPublicPostRank = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Public Posts' rank: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostRank(post, req.body.rank, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postPrivatePostRank = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating Private Posts' rank: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updatePostRank(post, req.body.rank, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postUserFriends = function(req, res){
@@ -114,7 +241,7 @@ module.exports.getPublicPost = function(req, res){
 	var id = req.param('id');
 	var notFoundMsg = "Could not find Public Post " + req.body.id + " in our system";
 
-	Controllers.grabDocById('public', id, getPostCallback(res, notFoundMsg));
+	Controllers.grabDocById('public', id, getDocCallback(res, notFoundMsg));
 };
 
 
@@ -155,7 +282,7 @@ module.exports.getPrivatePost = function(req, res){
 	var id = req.param('id');
 	var notFoundMsg = "Could not find Private Post " + req.body.id + " in our system";
 
-	Controllers.grabDocById('private', id, getPostCallback(res, notFoundMsg));
+	Controllers.grabDocById('private', id, getDocCallback(res, notFoundMsg));
 };
 
 
@@ -203,7 +330,7 @@ module.exports.getUser = function(req, res){
 	var id = req.param('id');
 	var notFoundMsg = "Could not find User " + req.body.id + " in our system";
 
-	Controllers.grabDocById('user', id, getUserCallback(res, notFoundMsg));
+	Controllers.grabDocById('user', id, getDocCallback(res, notFoundMsg));
 };
 
 
@@ -226,11 +353,39 @@ module.exports.getAllUsers = function(req, res){
 
 
 module.exports.deletePublicPost = function(req, res){
-	//TODO
+	var id = req.param('id');
+	Controllers.removeDoc('public', id, function(err){
+		if (err){
+			console.log("Error removing Public Post %s: " + err, id.toString());
+			errorCallback(res)(err);
+		} else {
+			emptySuccessCallback(res)();
+		}
+	});
 };
 
 module.exports.deletePrivatePost = function(req, res){
-	//TODO
+	var id = req.param('id');
+	Controllers.removeDoc('private', id, function(err){
+		if (err){
+			console.log("Error removing Private Post %s: " + err, id.toString());
+			errorCallback(res)(err);
+		} else {
+			emptySuccessCallback(res)();
+		}
+	});
+};
+
+module.exports.deleteUser = function(req, res){
+	var id = req.param('id');
+	Controllers.removeDoc('user', id, function(err){
+		if (err){
+			console.log("Error removing User %s: " + err, id.toString());
+			errorCallback(res)(err);
+		} else {
+			emptySuccessCallback(res)();
+		}
+	});
 };
 
 module.exports.deleteHuddles = function(req, res){
@@ -252,11 +407,37 @@ module.exports.deleteHuddles = function(req, res){
 
 
 module.exports.deletePublicPostCategories = function(req, res){
-	//TODO
+
+	console.log("Entered deletePublicPostCategories");
+
+	Controllers.grabDocById('public', req.body.id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.removePostCategories(post, req.body.categories, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.deletePrivatePostCategories = function(req, res){
-	//TODO
+
+	Controllers.grabDocById('private', req.body.id, function(err, post){
+		if (err){
+			console.log("Found error");
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				console.log("Found post");
+				Controllers.removePostCategories(post, req.body.categories, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 
@@ -269,6 +450,11 @@ module.exports.deletePrivatePostCategories = function(req, res){
 	              Callbacks
 *************************************************/
 
+var emptySuccessCallback = function(res){
+	return function(){
+		res.status(200).send("OK");
+	};
+};
 
 var successCallback = function(res){
 	return function(doc){
@@ -331,13 +517,13 @@ var postDocCallback = function(type, res){
 	};
 };
 
-var getPostCallback = function(res, msg){
-	return function(err, post){
+var getDocCallback = function(res, msg){
+	return function(err, doc){
 		if (err){
 			errorCallback(res)(err);
 		} else {
-			if (post){
-				successCallback(res)(post);
+			if (doc){
+				successCallback(res)(doc);
 			} else {
 				notFoundCallback(res)(msg);
 			}

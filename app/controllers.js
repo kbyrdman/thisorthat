@@ -24,6 +24,7 @@ var saveDoc = function(doc, errCallback, succCallback){
 };
 module.exports.saveDoc = saveDoc;
 
+
 var createDoc = function(type, doc, errCallback, succCallback){
 
 	var newDoc = null;
@@ -39,33 +40,108 @@ var createDoc = function(type, doc, errCallback, succCallback){
 module.exports.createDoc = createDoc;
 
 
+var removeDoc = function(type, id, errCallback){
 
-
-
-var incrementPostVotes = function(post, image, errCallback, succCallback){
-	//TODO
+	if (type == 'public'){
+		PublicPost.remove({_id: id}, errCallback);
+	} else if (type == 'private'){
+		PrivatePost.remove({_id: id}, errCallback);
+	} else if (type == 'user'){
+		User.remove({_id: id}, errCallback);
+	}
 };
-//module.exports.incrementPostVotes = incrementPostVotes;
+module.exports.removeDoc = removeDoc;
 
-var decrementPostVotes = function(post, image, errCallback, succCallback){
-	//TODO
-};
-//module.exports.decrementPostVotes = decrementPostVotes;
 
-var updatePostImageURI = function(post, uri, errCallback, succCallback){
-	//TODO
+
+
+var incrementPostVotes = function(post, side, errCallback, succCallback){
+	if (side == 'left'){
+		post.leftVotes = post.leftVotes + 1;
+	} else if (side == 'right') {
+		post.rightVotes = post.rightVotes + 1;
+	}
+	saveDoc(post, errCallback, succCallback);
 };
-//module.exports.updatePostImageURI = updatePostImageURI;
+module.exports.incrementPostVotes = incrementPostVotes;
+
+
+
+var decrementPostVotes = function(post, side, errCallback, succCallback){
+	if (side == 'left'){
+		if (post.leftVotes - 1 >= 0){
+			post.leftVotes = post.leftVotes - 1;
+		}
+	} else if (side == 'right') {
+		if (post.rightVotes - 1 >= 0){
+			post.rightVotes = post.rightVotes - 1;
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
+};
+module.exports.decrementPostVotes = decrementPostVotes;
+
+
+
+var updatePostImageURI = function(post, side, uri, errCallback, succCallback){
+
+	if (side == 'left'){
+		post.leftImage = uri;
+	} else if (side == 'right'){
+		post.rightImage = uri;
+	}
+	saveDoc(post, errCallback, succCallback);
+};
+module.exports.updatePostImageURI = updatePostImageURI;
+
+
+
+var updatePostTitle = function(post, title, errCallback, succCallback){
+
+	post.title = title;
+	saveDoc(post, errCallback, succCallback);
+};
+module.exports.updatePostTitle = updatePostTitle;
+
+
+
+var updatePostRank = function(post, rank, errCallback, succCallback){
+
+	post.rank = rank;
+	saveDoc(post, errCallback, succCallback);
+};
+module.exports.updatePostRank = updatePostRank;
+
+
 
 var addPostCategories = function(post, cats, errCallback, succCallback){
-	//TODO
+
+	for (i = 0; i < cats.length; i++){
+		var c = cats[i];
+		if (post.categories.indexOf(c) < 0){
+			post.categories.push(c);
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
 };
-//module.exports.addPostCategories = addPostCategories;
+module.exports.addPostCategories = addPostCategories;
+
+
 
 var removePostCategories = function(post, cats, errCallback, succCallback){
-	//TODO
+
+	for (i = 0; i < cats.length; i++){
+		var c = cats[i];
+		var index = post.categories.indexOf(c);
+		if (index >= 0){
+			post.categories.splice(index,1);
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
 };
-//module.exports.removePostCategories = removePostCategories;
+module.exports.removePostCategories = removePostCategories;
+
+
 
 var addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 
@@ -79,7 +155,7 @@ var addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 			h['huddleId'] = newHuddleId;
 			post.huddles.push(h);
 		} else {
-			var newHuddleId = generateHuddleId(newName, post.huddles[index].user_id);
+			var newHuddleId = generateHuddleId(newName, post.huddles[index].userId);
 			post.huddles[index].name = newName;
 			post.huddles[index].huddleId = newHuddleId;
 		}
@@ -87,6 +163,7 @@ var addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 	saveDoc(post, errCallback, succCallback);
 };
 module.exports.addPrivatePostHuddles = addPrivatePostHuddles;
+
 
 
 var removePrivatePostHuddles = function(post, huddles, errCallback, succCallback){
@@ -101,6 +178,8 @@ var removePrivatePostHuddles = function(post, huddles, errCallback, succCallback
 	saveDoc(post, errCallback, succCallback);
 };
 module.exports.removePrivatePostHuddles = removePrivatePostHuddles;
+
+
 
 
 
@@ -177,7 +256,7 @@ module.exports.Query = function(type, req, res) {
 
 	this.controller = (function(){
 		// returning a function to handle certain queries
-		if (req.param('user_id') != null){
+		if (req.param('userId') != null){
 			//handling user id query
 			return grabPostsByUserId;
 
