@@ -111,9 +111,7 @@ module.exports.postPrivatePostVotes = function(req, res){
 			if (post){
 				if (req.body.upvote == true){
 					Controllers.incrementPostVotes(post, side, errorCallback(res), successCallback(res));
-				}
-
-				if (req.body.downvote == true){
+				} else if (req.body.downvote == true){
 					Controllers.decrementPostVotes(post, side, errorCallback(res), successCallback(res));
 				}
 			} else {
