@@ -212,8 +212,18 @@ module.exports.postPrivatePostRank = function(req, res){
 };
 
 module.exports.postUserFriends = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating User's friends: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('user', req.body.id, function(err, user){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (user){
+				Controllers.addUsersFriends(user, req.body.friends, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postUserHuddles = function(req, res){
@@ -253,6 +263,7 @@ module.exports.getAllPublicPosts = function(req, res){
 		}
 	});
 };
+
 
 
 module.exports.getPublicPostsWithCategories = function(req, res){

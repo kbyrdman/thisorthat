@@ -55,7 +55,7 @@ module.exports.removeDoc = removeDoc;
 
 
 
-var incrementPostVotes = function(post, side, errCallback, succCallback){
+module.exports.incrementPostVotes = function(post, side, errCallback, succCallback){
 	if (side == 'left'){
 		post.leftVotes = post.leftVotes + 1;
 	} else if (side == 'right') {
@@ -63,11 +63,10 @@ var incrementPostVotes = function(post, side, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.incrementPostVotes = incrementPostVotes;
 
 
 
-var decrementPostVotes = function(post, side, errCallback, succCallback){
+module.exports.decrementPostVotes = function(post, side, errCallback, succCallback){
 	if (side == 'left'){
 		if (post.leftVotes - 1 >= 0){
 			post.leftVotes = post.leftVotes - 1;
@@ -79,11 +78,10 @@ var decrementPostVotes = function(post, side, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.decrementPostVotes = decrementPostVotes;
 
 
 
-var updatePostImageURI = function(post, side, uri, errCallback, succCallback){
+module.exports.updatePostImageURI = function(post, side, uri, errCallback, succCallback){
 
 	if (side == 'left'){
 		post.leftImage = uri;
@@ -92,29 +90,26 @@ var updatePostImageURI = function(post, side, uri, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.updatePostImageURI = updatePostImageURI;
 
 
 
-var updatePostTitle = function(post, title, errCallback, succCallback){
+module.exports.updatePostTitle = function(post, title, errCallback, succCallback){
 
 	post.title = title;
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.updatePostTitle = updatePostTitle;
 
 
 
-var updatePostRank = function(post, rank, errCallback, succCallback){
+module.exports.updatePostRank = function(post, rank, errCallback, succCallback){
 
 	post.rank = rank;
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.updatePostRank = updatePostRank;
 
 
 
-var addPostCategories = function(post, cats, errCallback, succCallback){
+module.exports.addPostCategories = function(post, cats, errCallback, succCallback){
 
 	for (i = 0; i < cats.length; i++){
 		var c = cats[i];
@@ -124,11 +119,10 @@ var addPostCategories = function(post, cats, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.addPostCategories = addPostCategories;
 
 
 
-var removePostCategories = function(post, cats, errCallback, succCallback){
+module.exports.removePostCategories = function(post, cats, errCallback, succCallback){
 
 	for (i = 0; i < cats.length; i++){
 		var c = cats[i];
@@ -139,11 +133,10 @@ var removePostCategories = function(post, cats, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.removePostCategories = removePostCategories;
 
 
 
-var addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
@@ -162,11 +155,9 @@ var addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.addPrivatePostHuddles = addPrivatePostHuddles;
 
 
-
-var removePrivatePostHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.removePrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
@@ -177,9 +168,43 @@ var removePrivatePostHuddles = function(post, huddles, errCallback, succCallback
 	}
 	saveDoc(post, errCallback, succCallback);
 };
-module.exports.removePrivatePostHuddles = removePrivatePostHuddles;
 
 
+module.exports.addUsersFriends = function(post, friends, errCallback, succCallback){
+
+	while (friends.length > 0){
+		var f = friends.pop();
+		var index = indexOfFriendsUserId(post.friends, f['userId']);
+
+		if (index < 0){
+			post.friends.push(f);
+		} else {
+			post.friends[index].username = f['username'];
+			post.friends[index].firstname = f['firstname'];
+			post.friends[index].lastname = f['lastname'];
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
+};
+
+
+module.exports.addUsersHuddles = function(post, huddles, errCallback, succCallback){
+
+	while (huddles.length > 0){
+		var h = huddles.pop();
+		var index = indexOfHuddleId(post.huddles, h['huddleId']);
+		var newName = h['name'];
+
+		if (index < 0){
+			post.huddles.push(h);
+		} else {
+			var newHuddleId = generateHuddleId(newName, post.huddles[index].userId);
+			post.huddles[index].name = newName;
+			post.huddles[index].huddleId = newHuddleId;
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
+};
 
 
 
@@ -286,7 +311,7 @@ var generateHuddleId = function(user_id, huddle_name){
 	console.log(hash);
 	return hash;
 };
-module.exports.generateHuddleId = generateHuddleId;
+
 
 /*
 	Assumes arr is populated with objects structed as follows:
@@ -301,6 +326,14 @@ var indexOfHuddleId = function(arr, id){
 	}
 	return -1;
 };
-module.exports.indexOfHuddleId = indexOfHuddleId;
+
+var indexOfFriendsUserId = function(arr, id){
+	for (i = 0; i < arr.length; i++){
+		if (arr[i]['userId'] == id){
+			return i;
+		}
+	}
+	return -1;
+};
 
 
