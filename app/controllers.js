@@ -141,16 +141,12 @@ module.exports.addPrivatePostHuddles = function(post, huddles, errCallback, succ
 	while (huddles.length > 0){
 		var h = huddles.pop();
 		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-		var newName = h['name'];
 
 		if (index < 0){
-			var newHuddleId = generateHuddleId(newName, h['userId']);
-			h['huddleId'] = newHuddleId;
 			post.huddles.push(h);
 		} else {
-			var newHuddleId = generateHuddleId(newName, post.huddles[index].userId);
-			post.huddles[index].name = newName;
-			post.huddles[index].huddleId = newHuddleId;
+			//huddle already exists
+			return null;
 		}
 	}
 	saveDoc(post, errCallback, succCallback);
@@ -188,17 +184,52 @@ module.exports.addUsersFriends = function(post, friends, errCallback, succCallba
 };
 
 
-module.exports.addUsersHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.addUserHuddle = function(user, huddle){
 
+	var newName = huddle['name'];
+	var newHuddleId = generateHuddleId(newName, user._id);
+	var index = indexOfHuddleId(user.huddles, newHuddleId);
+
+	if (index < 0){
+		huddle['huddleId'] = newHuddleId;
+		user.huddles.push(huddle);
+	} else {
+		return null;
+	}
+};
+
+module.exports.updateUserHuddle = function(user, huddle){
+
+	var origHuddleId = huddle['huddleId'];
+	var newName = huddle['name'];
+	var newHuddleId = generateHuddleId(newName, user._id);
+	var index = indexOfHuddleId(user.huddles, origHuddleId);
+
+	if (index < 0){
+		return null;
+	} else {
+		huddle['huddleId'] = newHuddleId;
+		user.huddles.push(huddle);
+	}
+
+	//TODO
+	//Find all private posts with original huddle_id and update
+};
+
+
+module.exports.removeUsersHuddles = function(post, huddles, errCallback, succCallback){
+
+	//TODO
 	while (huddles.length > 0){
 		var h = huddles.pop();
 		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-		var newName = h['name'];
+		
 
 		if (index < 0){
 			post.huddles.push(h);
 		} else {
-			var newHuddleId = generateHuddleId(newName, post.huddles[index].userId);
+			var newName = h['name'];
+			
 			post.huddles[index].name = newName;
 			post.huddles[index].huddleId = newHuddleId;
 		}
