@@ -1,0 +1,154 @@
+
+[
+
+	// Public Posts
+	{
+	    "leftImage": "aws://uri.to.image/clinton",
+	    "rank": 50,
+	    "rightImage": "aws://uri.to.image/obama",
+	    "title": "Who will win the presidency?",
+	    "userId": "55750838d0880c6d86606447",
+	    "categories": [
+	        "Public Policy",
+	        "America"
+	    ],
+	    "createdTime": "2015-06-09T01:40:00.308Z",
+	    "location": [
+	        503.56,
+	        108.5
+	    ],
+	    "rightVotes": 0,
+	    "leftVotes": 0
+	},
+	{
+	    "leftImage": "aws://uri.to.image/cavs",
+	    "rank": 3,
+	    "rightImage": "aws://uri.to.image/warriors",
+	    "title": "Who will win the NBA championship?",
+	    "userId": "5574ec7491f99c1d86d5d652",
+	    "categories": [
+	        "Sports",
+	        "NBA"
+	    ],
+	    "createdTime": "2015-06-09T01:40:00.308Z",
+	    "location": [
+	        0,
+	        0
+	    ],
+	    "rightVotes": 0,
+	    "leftVotes": 0
+	},
+
+
+	// Private Posts
+	{
+        "rank": 1,
+        "rightImage": "aws://uri.to.image/right",
+        "title": "Better Boobs?",
+        "userId": "55762917c295f6a2aaa2ec05",
+        "huddles": [],
+        "categories": [
+            "Babes",
+            "Women"
+        ],
+        "createdTime": "2015-06-08T23:48:24.360Z",
+        "location": [
+            34.5,
+            120.8
+        ],
+        "rightVotes": 0,
+        "leftVotes": 1
+    },
+    {
+        "leftImage": "aws://uri.to.image/left",
+        "rank": 100,
+        "rightImage": "aws://uri.to.image/right",
+        "title": "Bigger Dicks",
+        "userId": "55750838d0880c6d86606447",
+        "huddles": [],
+        "categories": [
+            "Naked",
+            "Dudes",
+            "Porn",
+            "Men"
+        ],
+        "createdTime": "2015-06-08T23:51:31.826Z",
+        "location": [
+            0.01,
+            120
+        ],
+        "rightVotes": 5,
+        "leftVotes": 14
+    }
+
+
+    //Users
+    {
+        "firstName": "Ron",
+        "lastName": "Burgundy",
+        "password": "password",
+        "username": "flutemaster7",
+        "friendHuddles": [],
+        "huddles": [],
+        "friends": [
+            {
+                "userId": "5574ec7491f99c1d86d5d652",
+                "username": "kbyrdman15",
+                "lastname": "Byrd",
+                "firstname": "Kyle"
+            },
+            {
+                "userId": "55750838d0880c6d86606447",
+                "username": "mnagle90",
+                "lastname": "Nagle",
+                "firstname": "Mike"
+            }
+        ]
+    },
+    {
+        "first_name": "Kyle",
+        "friend_huddles": [],
+        "last_name": "Byrd",
+        "password": "fakepassword",
+        "username": "kbyrdman15",
+        "friendHuddles": [],
+        "huddles": [],
+        "friends": [
+            {
+                "userId": "55750838d0880c6d86606447",
+                "lastname": "Nagle",
+                "firstname": "Mike",
+                "username": "mnagle90"
+            },
+            {
+                "userId": "557fa1cd9c6c01b505a10143",
+                "username": "flutemaster7",
+                "lastname": "Burgundy",
+                "firstname": "Ron"
+            }
+        ]
+    },
+    {
+        "first_name": "Mike",
+        "friend_huddles": [],
+        "last_name": "Nagle",
+        "password": "fakepassword",
+        "username": "mnagle90",
+        "friendHuddles": [],
+        "huddles": [],
+        "friends": [
+            {
+                "userId": "5574ec7491f99c1d86d5d652",
+                "lastname": "Byrd",
+                "firstname": "Kyle",
+                "username": "kbyrdman15"
+            },
+            {
+                "userId": "557fa1cd9c6c01b505a10143",
+                "username": "flutemaster7",
+                "lastname": "Burgundy",
+                "firstname": "Ron"
+            }
+        ]
+    }
+]

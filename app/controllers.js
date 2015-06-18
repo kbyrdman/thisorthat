@@ -1,7 +1,7 @@
-var PublicPost = require('../app/models/publicPost.js');
-var PrivatePost = require('../app/models/privatePost.js');
-var User = require('../app/models/user.js');
-var crypto = require('crypto');
+var PublicPost = require('../app/models/publicPost.js').model;
+var PrivatePost = require('../app/models/privatePost.js').model;
+var User = require('../app/models/user.js').model;
+var Huddle = require('../app/models/huddle.js').model;
 
 
 
@@ -136,18 +136,28 @@ module.exports.removePostCategories = function(post, cats, errCallback, succCall
 
 
 
-module.exports.addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.updatePrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
-		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-
-		if (index < 0){
-			post.huddles.push(h);
-		} else {
-			//huddle already exists
-			return null;
+		if (h._id){
+			//searching for existing huddle as embedding doc
+			var ex_h = post.huddles.id(h._id);
+			if (ex_h != null){
+				console.log("Found existing huddle: %s", ex_h.title);
+				ex_h.userId = h.userId;
+				ex_h.title = h.title;
+				ex_h.save(function(err){
+					if (err){
+						errCallback(err);
+						return false;
+					}
+				});
+				continue;
+			}
 		}
+		//var newHuddle = new Huddle();
+		post.huddles.push({title: h.title, userId: h.userId});
 	}
 	saveDoc(post, errCallback, succCallback);
 };
@@ -157,9 +167,9 @@ module.exports.removePrivatePostHuddles = function(post, huddles, errCallback, s
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
-		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-		if (index >= 0){
-			post.huddles.splice(index,1);
+		var ex_h = post.huddles.id(h._id);
+		if (ex_h != null){
+			ex_h.remove();
 		}
 	}
 	saveDoc(post, errCallback, succCallback);
@@ -214,16 +224,15 @@ module.exports.updateUserHuddle = function(user, huddle){
 
 	//TODO
 	//Find all private posts with original huddle_id and update
+	//PrivatePost.find({'huddles.huddleId': });
 };
 
 
 module.exports.removeUsersHuddles = function(post, huddles, errCallback, succCallback){
 
-	//TODO
 	while (huddles.length > 0){
 		var h = huddles.pop();
 		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-		
 
 		if (index < 0){
 			post.huddles.push(h);
@@ -235,6 +244,9 @@ module.exports.removeUsersHuddles = function(post, huddles, errCallback, succCal
 		}
 	}
 	saveDoc(post, errCallback, succCallback);
+
+	//TODO
+	//Find all private posts with original huddle_id and update
 };
 
 
@@ -334,14 +346,6 @@ module.exports.Query = function(type, req, res) {
 	})();
 };
 
-
-
-var generateHuddleId = function(user_id, huddle_name){
-
-	var hash = crypto.createHash('md5').update(user_id + huddle_name).digest('hex');
-	console.log(hash);
-	return hash;
-};
 
 
 /*

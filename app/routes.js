@@ -1,6 +1,6 @@
 var api = require('../app/api.js');
 
-module.exports = function(app) {
+module.exports = function(app, emitter) {
 
     /**************************
     *    Backend endpoints    *

@@ -37,7 +37,7 @@ module.exports.postHuddles = function(req, res){
 			errorCallback(res)(err);
 		} else {
 			if (post){
-				Controllers.addPrivatePostHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
+				Controllers.updatePrivatePostHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
 			} else {
 				noContentCallback(res)();
 			}
