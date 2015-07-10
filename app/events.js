@@ -2,12 +2,34 @@ var eventEmitter = require('events').EventEmitter;
 var emitter = new eventEmitter();
 
 
-module.exports.emitHuddleUpdate = function(oldId, newId){
-	console.log("Emitting 'privatePosts::updateHuddleId' with %s, %s", oldId, newId);
-	emitter.emit('privatePosts::updateHuddleId', oldId, newId);
+module.exports.emitUserHuddleRemoved = function(huddleId){
+	console.log("Emitting 'user::removedHuddle' with %s", huddleId);
+	emitter.emit('user::removedHuddle', huddleId);
 };
 
-module.exports.consumeHuddleUpdateEvent = function(callback){
-	emitter.on('privatePosts::updateHuddleId', callback);
-	console.log("Listening for 'privatePosts::updateHuddleId' Event");
+module.exports.consumeUserHuddleRemovedEvent = function(callback){
+	emitter.on('user::removedHuddle', callback);
+	console.log("Listening for 'user::removedHuddle' Event");
+};
+
+
+module.exports.emitUserHuddleUpdated = function(huddleId){
+	console.log("Emitting 'user::updatedHuddle' with %s", huddleId);
+	emitter.emit('user::updatedHuddle', huddleId);
+};
+
+module.exports.consumeUserHuddleUpdatedEvent = function(callback){
+	emitter.on('user::updatedHuddle', callback);
+	console.log("Listening for 'user::updatedHuddle' Event");
+};
+
+
+module.exports.emitUserHuddleDeleted = function(huddleId){
+	console.log("Emitting 'user::updatedHuddle' with %s", huddleId);
+	emitter.emit('user::updatedHuddle', huddleId);
+};
+
+module.exports.consumeUserHuddleDeletedEvent = function(callback){
+	emitter.on('user::updatedHuddle', callback);
+	console.log("Listening for 'user::updatedHuddle' Event");
 };

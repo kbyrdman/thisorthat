@@ -32,12 +32,12 @@ module.exports.putUser = function(req, res){
 
 module.exports.postHuddles = function(req, res){
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
 			if (post){
-				Controllers.updatePrivatePostHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
+				Controllers.addPrivatePostHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
 			} else {
 				noContentCallback(res)();
 			}
@@ -50,7 +50,7 @@ module.exports.postPublicPostImageURI = function(req, res){
 
 	var side = req.param('side');
 
-	Controllers.grabDocById('public', req.body.id, function(err, post){
+	Controllers.grabDocById('public', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -67,7 +67,7 @@ module.exports.postPrivatePostImageURI = function(req, res){
 
 	var side = req.param('side');
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -84,7 +84,7 @@ module.exports.postPublicPostVotes = function(req, res){
 
 	var side = req.param('side');
 
-	Controllers.grabDocById('public', req.body.id, function(err, post){
+	Controllers.grabDocById('public', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -104,7 +104,7 @@ module.exports.postPublicPostVotes = function(req, res){
 module.exports.postPrivatePostVotes = function(req, res){
 	var side = req.param('side');
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -123,7 +123,7 @@ module.exports.postPrivatePostVotes = function(req, res){
 
 module.exports.postPublicPostTitle = function(req, res){
 
-	Controllers.grabDocById('public', req.body.id, function(err, post){
+	Controllers.grabDocById('public', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -138,7 +138,7 @@ module.exports.postPublicPostTitle = function(req, res){
 
 module.exports.postPrivatePostTitle = function(req, res){
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -153,7 +153,7 @@ module.exports.postPrivatePostTitle = function(req, res){
 
 module.exports.postPublicPostCategories = function(req, res){
 
-	Controllers.grabDocById('public', req.body.id, function(err, post){
+	Controllers.grabDocById('public', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -168,7 +168,7 @@ module.exports.postPublicPostCategories = function(req, res){
 
 module.exports.postPrivatePostCategories = function(req, res){
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -183,7 +183,7 @@ module.exports.postPrivatePostCategories = function(req, res){
 
 module.exports.postPublicPostRank = function(req, res){
 
-	Controllers.grabDocById('public', req.body.id, function(err, post){
+	Controllers.grabDocById('public', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -198,7 +198,7 @@ module.exports.postPublicPostRank = function(req, res){
 
 module.exports.postPrivatePostRank = function(req, res){
 
-	Controllers.grabDocById('private', req.body.id, function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -213,7 +213,7 @@ module.exports.postPrivatePostRank = function(req, res){
 
 module.exports.postUserFriends = function(req, res){
 
-	Controllers.grabDocById('user', req.body.id, function(err, user){
+	Controllers.grabDocById('user', req.body._id, function(err, user){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -227,13 +227,33 @@ module.exports.postUserFriends = function(req, res){
 };
 
 module.exports.postUserHuddles = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating User's huddles: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('user', req.body._id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.updateUserHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 module.exports.postUserLinkedHuddles = function(req, res){
-	//TODO
-	res.status(200).send("Functionality for updating User's linked huddles: Comming soon to a Theater near you!");
+
+	Controllers.grabDocById('user', req.body._id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.addUsersLinkedHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 
@@ -247,7 +267,7 @@ module.exports.postUserLinkedHuddles = function(req, res){
 module.exports.getPublicPost = function(req, res){
 
 	var id = req.param('id');
-	var notFoundMsg = "Could not find Public Post " + req.body.id + " in our system";
+	var notFoundMsg = "Could not find Public Post " + id + " in our system";
 
 	Controllers.grabDocById('public', id, getDocCallback(res, notFoundMsg));
 };
@@ -289,7 +309,7 @@ module.exports.getPublicPostsByQuery = function(req, res){
 module.exports.getPrivatePost = function(req, res){
 
 	var id = req.param('id');
-	var notFoundMsg = "Could not find Private Post " + req.body.id + " in our system";
+	var notFoundMsg = "Could not find Private Post " + id + " in our system";
 
 	Controllers.grabDocById('private', id, getDocCallback(res, notFoundMsg));
 };
@@ -337,7 +357,7 @@ module.exports.getUser = function(req, res){
 
 	//TODO
 	var id = req.param('id');
-	var notFoundMsg = "Could not find User " + req.body.id + " in our system";
+	var notFoundMsg = "Could not find User " + id + " in our system";
 
 	Controllers.grabDocById('user', id, getDocCallback(res, notFoundMsg));
 };
@@ -397,9 +417,9 @@ module.exports.deleteUser = function(req, res){
 	});
 };
 
-module.exports.deleteHuddles = function(req, res){
+module.exports.deletePrivatePostHuddles = function(req, res){
 
-	var deleteHuddlesCallback = function(err, post){
+	Controllers.grabDocById('private', req.body._id, function(err, post){
 		if (err){
 			errorCallback(res)(err);
 		} else {
@@ -409,9 +429,22 @@ module.exports.deleteHuddles = function(req, res){
 				noContentCallback(res)();
 			}
 		}
-	};
+	});
+};
 
-	Controllers.grabDocById('private', req.body.id, deleteHuddlesCallback);
+module.exports.deleteUserHuddles = function(req, res){
+
+	Controllers.grabDocById('user', req.body._id, function(err, post){
+		if (err){
+			errorCallback(res)(err);
+		} else {
+			if (post){
+				Controllers.removeUserHuddles(post, req.body.huddles, errorCallback(res), successCallback(res));
+			} else {
+				noContentCallback(res)();
+			}
+		}
+	});
 };
 
 

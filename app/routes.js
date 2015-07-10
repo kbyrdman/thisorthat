@@ -42,7 +42,7 @@ module.exports = function(app, emitter) {
     //app.get('/api/user', api.getUserByQuery);
 
     // DELETE
-    app.delete('/api/posts/private/huddles', api.deleteHuddles);
+    app.delete('/api/user/huddles', api.deleteUserHuddles);
     app.delete('/api/posts/public/categories', api.deletePublicPostCategories);
     app.delete('/api/posts/private/categories', api.deletePrivatePostCategories);
     app.delete('/api/posts/public/:id', api.deletePublicPost);

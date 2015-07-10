@@ -1,10 +1,5 @@
 var mongoose = require('mongoose');
-var huddleSchema = require('./huddle.js').schema;
 var Events = require('../events.js');
-
-
-//Setting up our event consumer
-Events.consumeHuddleUpdateEvent(updateHuddleIds);
 
 
 //setting up our schema
@@ -19,35 +14,49 @@ var PrivatePostSchema = new mongoose.Schema({
 	createdTime: {type: Date, default: new Date()},
 	categories: [String],
 	rank: Number,
-	huddles: [huddleSchema]
+	huddles: Array
 });
 
 //Setting our multikey index
-PrivatePostSchema.index({"huddleSchema.huddleId": 1});
+PrivatePostSchema.index({"huddles.id": 1});
 
 
-PrivatePostSchema.static.findByHuddleId = function(huddleId, callback){
-	//TODO
-	callback(posts);
+
+PrivatePostSchema.statics.removeHuddle = function removeHuddle(huddleId, errorCallback){
+
+	console.log("Updating Private Posts with _id %s ...", id);
+	this.find({'huddles.id': huddleId}, function(err, posts){
+		if (err){
+			if (err){
+				errorCallback(err);
+			}
+		} else {
+			for(i = 0; i < posts.length; i++){
+				var post = posts[i];
+				var index = indexOfId(post.huddles, huddleId);
+				post.huddles.splice(index, 1);
+				post.save(function(err){
+					if (err){
+						errorCallback(err);
+					}
+				});
+			}
+			console.log("Removed %s from %s Private Posts", huddeId, posts.length.toString());
+		}
+	});
 };
 
 
-var PrivatePost = mongoose.model('privatePost', PrivatePostSchema);
-module.exports.model = PrivatePost;
+module.exports.model = mongoose.model('privatePost', PrivatePostSchema);
+module.exports.schema = PrivatePostSchema;
 
 
-function updateHuddleIds(oldId, newId){
-	console.log("Updating huddle id %s ...", oldId);
 
-	/*
-	PrivatePost.findByHuddleId(oldId, function(posts){
-		for (i = 0; i < posts.length; i++){
-			posts[i].huddleId = newId;
-			posts[i].save(function(err){
-				//TODO
-			});
+function indexOfId(arr, id){
+	for (i = 0; i < arr.length; i++){
+		if (arr[i].id == id){
+			return i;
 		}
-	});
-	*/
-	console.log("Updated huddle id %s ...", newId);
-}
+	}
+	return -1;
+};

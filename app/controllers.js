@@ -2,6 +2,24 @@ var PublicPost = require('../app/models/publicPost.js').model;
 var PrivatePost = require('../app/models/privatePost.js').model;
 var User = require('../app/models/user.js').model;
 var Huddle = require('../app/models/huddle.js').model;
+var Events = require('../app/events.js');
+
+
+
+//Consuming Huddle removed event
+Events.consumeUserHuddleRemovedEvent(function(id){
+	PrivatePost.removeHuddle(id, function(err){
+		console.log("Error Removing Huddles from existing Private Posts");
+		console.log(err);
+	});
+});
+
+Events.consumeUserHuddleUpdatedEvent(function(huddle){
+	User.updateHuddle(huddle, function(err){
+		console.log("Error Updating Linked Huddles for existing Users");
+		console.log(err);
+	});
+});
 
 
 
@@ -136,28 +154,17 @@ module.exports.removePostCategories = function(post, cats, errCallback, succCall
 
 
 
-module.exports.updatePrivatePostHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.addPrivatePostHuddles = function(post, huddles, errCallback, succCallback){
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
-		if (h._id){
-			//searching for existing huddle as embedding doc
-			var ex_h = post.huddles.id(h._id);
-			if (ex_h != null){
-				console.log("Found existing huddle: %s", ex_h.title);
-				ex_h.userId = h.userId;
-				ex_h.title = h.title;
-				ex_h.save(function(err){
-					if (err){
-						errCallback(err);
-						return false;
-					}
-				});
+		//searching for existing huddle
+		for (i = 0; i < post.huddles.length; i++){
+			if (post.huddles[i].id == h._id){
 				continue;
 			}
 		}
-		//var newHuddle = new Huddle();
-		post.huddles.push({title: h.title, userId: h.userId});
+		post.huddles.push(h);
 	}
 	saveDoc(post, errCallback, succCallback);
 };
@@ -167,86 +174,88 @@ module.exports.removePrivatePostHuddles = function(post, huddles, errCallback, s
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
-		var ex_h = post.huddles.id(h._id);
-		if (ex_h != null){
-			ex_h.remove();
+		for (i = 0; i < post.huddles.length; i++){
+			if (post.huddles[i].id == h._id){
+				post.huddles.splice(i, 1);
+				continue;
+			}
 		}
 	}
 	saveDoc(post, errCallback, succCallback);
 };
 
 
-module.exports.addUsersFriends = function(post, friends, errCallback, succCallback){
+module.exports.addUsersFriends = function(user, friends, errCallback, succCallback){
 
 	while (friends.length > 0){
-		var f = friends.pop();
-		var index = indexOfFriendsUserId(post.friends, f['userId']);
 
-		if (index < 0){
-			post.friends.push(f);
-		} else {
-			post.friends[index].username = f['username'];
-			post.friends[index].firstname = f['firstname'];
-			post.friends[index].lastname = f['lastname'];
+		var f = friends.pop();
+		if (f._id){
+			var ex_f = user.friends.id(f._id);
+			if (ex_f){
+				continue;
+			}
 		}
+		user.friends.push(f);
 	}
 	saveDoc(post, errCallback, succCallback);
 };
 
 
-module.exports.addUserHuddle = function(user, huddle){
-
-	var newName = huddle['name'];
-	var newHuddleId = generateHuddleId(newName, user._id);
-	var index = indexOfHuddleId(user.huddles, newHuddleId);
-
-	if (index < 0){
-		huddle['huddleId'] = newHuddleId;
-		user.huddles.push(huddle);
-	} else {
-		return null;
-	}
-};
-
-module.exports.updateUserHuddle = function(user, huddle){
-
-	var origHuddleId = huddle['huddleId'];
-	var newName = huddle['name'];
-	var newHuddleId = generateHuddleId(newName, user._id);
-	var index = indexOfHuddleId(user.huddles, origHuddleId);
-
-	if (index < 0){
-		return null;
-	} else {
-		huddle['huddleId'] = newHuddleId;
-		user.huddles.push(huddle);
-	}
-
-	//TODO
-	//Find all private posts with original huddle_id and update
-	//PrivatePost.find({'huddles.huddleId': });
-};
-
-
-module.exports.removeUsersHuddles = function(post, huddles, errCallback, succCallback){
+module.exports.updateUserHuddles = function(user, huddles, errCallback, succCallback){
 
 	while (huddles.length > 0){
 		var h = huddles.pop();
-		var index = indexOfHuddleId(post.huddles, h['huddleId']);
-
-		if (index < 0){
-			post.huddles.push(h);
+		if (h._id){
+			//searching for existing huddle as embedding doc
+			var ex_h = post.huddles.id(h._id);
+			if (ex_h){
+				ex_h.userId = h.userId;
+				ex_h.title = h.title;
+				ex_h.save(function(err){
+					if (err){
+						errCallback(err);
+						return false;
+					}
+				});
+				Events.emitUserHuddleUpdated(ex_h);
+				continue;
+			}
 		} else {
-			var newName = h['name'];
-			
-			post.huddles[index].name = newName;
-			post.huddles[index].huddleId = newHuddleId;
+			post.huddles.push({title: h.title, userId: h.userId});
 		}
 	}
 	saveDoc(post, errCallback, succCallback);
+};
 
-	//TODO
-	//Find all private posts with original huddle_id and update
+
+module.exports.removeUsersHuddles = function(user, huddles, errCallback, succCallback){
+
+	while (huddles.length > 0){
+		var h = huddles.pop();
+		var ex_h = post.huddles.id(h._id);
+		if (ex_h != null){
+			ex_h.remove();
+			Events.emitUserHuddleRemoved(ex_h._id);
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
+};
+
+
+module.exports.addUsersLinkedHuddles = function(user, huddles, errCallback, succCallback){
+
+	while (huddles.length > 0){
+		var h = huddles.pop();
+		if (h._id){
+			//searching for existing huddle as embedding doc
+			var ex_h = post.linkedHuddles.id(h._id);
+			if (ex_h == null){
+				post.linkedHuddles.push({title: h.title, userId: h.userId});
+			}
+		}
+	}
+	saveDoc(post, errCallback, succCallback);
 };
 
 
@@ -345,30 +354,4 @@ module.exports.Query = function(type, req, res) {
 		}
 	})();
 };
-
-
-
-/*
-	Assumes arr is populated with objects structed as follows:
-
-	{'name': 'MyHuddle', 'user_id': 1234321, 'huddle_id': 8941#$5815}
-*/
-var indexOfHuddleId = function(arr, id){
-	for (i = 0; i < arr.length; i++){
-		if (arr[i]['huddleId'] == id){
-			return i;
-		}
-	}
-	return -1;
-};
-
-var indexOfFriendsUserId = function(arr, id){
-	for (i = 0; i < arr.length; i++){
-		if (arr[i]['userId'] == id){
-			return i;
-		}
-	}
-	return -1;
-};
-
 
